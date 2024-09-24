@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>학사일정</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <div class="navbar">
+        <span id="welcome-message" class="username"></span>
+        <button id="logoutButton" style="display:none">로그아웃</button>
+    </div>
+    <div class="schedule-container">
+        <h1>2024 학사일정</h1>
+        
+        <div class="schedule-month">
+            <h3>7월 (July)</h3>
+            <div class="schedule-item">07.01(월) ~ 07.11(목): 2024학년도 1학기 성적열람 및 정정</div>
+            <div class="schedule-item">07.15(월) ~ 07.19(금): 전공심화 / 복수전공 신청(2차)</div>
+            <div class="schedule-item">07.22(월) ~ 07.25(목): 2024학년도 하계학기 성적열람 및 정정</div>
+        </div>
+        
+        <div class="schedule-month">
+            <h3>8월 (August)</h3>
+            <div class="schedule-item">08.12(월) ~ 08.16(금): 2024학년도 2학기 수강과목 확인</div>
+            <div class="schedule-item">08.15(목): 광복절(공휴일)</div>
+            <div class="schedule-item">08.19(월) ~ 08.23(금): 2024학년도 2학기 수강신청(1차)</div>
+            <div class="schedule-item">08.19(월) ~ 08.23(금): 2024학년도 2학기 휴·복학 신청</div>
+            <div class="schedule-item">08.22(목): 2024년 8월 학위수여식</div>
+            <div class="schedule-item">08.26(월) ~ 08.30(금): 2024학년도 2학기 등록금 납부</div>
+        </div>
+        
+        <div class="schedule-month">
+            <h3>9월 (September)</h3>
+            <div class="schedule-item">09.02(월): 2024학년도 2학기 개강</div>
+            <div class="schedule-item">09.02(월) ~ 09.06(금): 2024학년도 2학기 수강신청 정정기간(2차)</div>
+            <div class="schedule-item">09.02(월) ~ 09.06(금): 2024학년도 2학기 등록금 납부(추가)</div>
+            <div class="schedule-item">09.11(수) ~ 09.12(목): MT</div>
+            <div class="schedule-item">09.16(월) ~ 09.18(수): 추석연휴(공휴일)</div>
+            <div class="schedule-item">09.23(월) ~ 09.27(금): 2025년 2월 조기졸업/졸업연장 신청</div>
+            <div class="schedule-item">09.23(월) ~ 09.27(금): E-sports 대회</div>
+            <div class="schedule-item">09.30(월) ~ 10.18(금): 2024학년도 2학기 중간 수업평가(강의평가)</div>
+        </div>
+        
+        <div class="schedule-month">
+            <h3>10월 (October)</h3>
+            <div class="schedule-item">10.03(목): 개천절(공휴일)</div>
+            <div class="schedule-item">10.08(화): 체육대회</div>
+            <div class="schedule-item">10.09(수): 한글날(공휴일)</div>
+            <div class="schedule-item">10.14(월) ~ 10.18(금): 전공심화 / 복수전공 신청(3차)</div>
+            <div class="schedule-item">10.21(월) ~ 10.25(금): 2024학년도 2학기 중간평가(중간고사)</div>
+        </div>
+        
+        <div class="schedule-month">
+            <h3>11월 (November)</h3>
+            <div class="schedule-item">11.11(월) ~ 11.15(금): 2025학년도 1학기 전과신청</div>
+            <div class="schedule-item">11.18(월) ~ 12.20(금): 2024학년도 2학기 기말 수업평가(강의평가)</div>
+        </div>
+        
+        <div class="schedule-month">
+            <h3>12월 (December)</h3>
+            <div class="schedule-item">12.09(월) ~ 12.13(금): 2024학년도 2학기 기말평가(기말고사)</div>
+            <div class="schedule-item">12.10(화) ~ 12.12(목): 2024학년도 동계학기 수강신청</div>
+            <div class="schedule-item">12.16(월) ~ 12.20(금): 2024학년도 2학기 보강주간</div>
+            <div class="schedule-item">12.16(월) ~ 12.20(금): 2024학년도 1학기 재입학 신청</div>
+            <div class="schedule-item">12.17(화) ~ 12.19(목): 2024학년도 동계학기 수강료 납부</div>
+            <div class="schedule-item">12.25(수): 성탄절(공휴일)</div>
+            <div class="schedule-item">12.26(목) ~ 01.16(목): 2024학년도 동계학기 강좌 수강</div>
+            <div class="schedule-item">12.30(월) ~ 01.09(목): 2024학년도 2학기 성적열람 및 정정</div>
+        </div>
+    </div>
+    <script>
+        async function checkLoginStatus() {
+            const response = await fetch('/auth/status');
+            const data = await response.json();
+            if (data.loggedIn) {
+                const usernameResponse = await fetch('/auth/username');
+                const usernameData = await usernameResponse.json();
+                document.getElementById('welcome-message').textContent = `${usernameData.username}님, 환영합니다!`;
+                document.getElementById('logoutButton').style.display = 'inline';
+            } else {
+                window.location.href = 'login.html';
+            }
+        }
+
+        document.getElementById('logoutButton').addEventListener('click', async () => {
+            const response = await fetch('/auth/logout', {
+                method: 'POST'
+            });
+            if (response.ok) {
+                window.location.href = 'login.html';
+            } else {
+                alert('로그아웃 중 오류가 발생했습니다.');
+            }
+        });
+
+        checkLoginStatus();
+    </script>
+</body>
+</html>

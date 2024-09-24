@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>홈</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <div class="navbar">
+        <span id="welcome-message" class="username"></span>
+        <button id="logoutButton" style="display:none">로그아웃</button>
+    </div>
+    <h1>환영합니다</h1>
+    <div>
+        <a href="register.html">회원가입</a>
+        <a href="login.html">로그인</a>
+        <a href="enroll.html">수강신청</a>
+        <a href="notices.html">공지사항</a>
+        <a href="schedule.html">학사일정</a>
+    </div>
+    <div class="d-day-container">
+        <button id="semesterStartButton" class="d-day-button" data-default-text="2학기 개강까지 남은 시간">2학기 개강까지 남은 시간</button>
+        <button id="semesterEndButton" class="d-day-button" data-default-text="2학기 종강까지 남은 시간">2학기 종강까지 남은 시간</button>
+    </div>
+    <script>
+        async function checkLoginStatus() {
+            const response = await fetch('/auth/status');
+            const data = await response.json();
+            if (data.loggedIn) {
+                const usernameResponse = await fetch('/auth/username');
+                const usernameData = await usernameResponse.json();
+                document.getElementById('welcome-message').textContent = `${usernameData.username}님, 환영합니다!`;
+                document.getElementById('logoutButton').style.display = 'inline';
+            } else {
+                document.getElementById('welcome-message').textContent = '로그인이 필요합니다.';
+                document.getElementById('logoutButton').style.display = 'none';
+            }
+        }
+
+        document.getElementById('logoutButton').addEventListener('click', async () => {
+            const response = await fetch('/auth/logout', {
+                method: 'POST'
+            });
+            if (response.ok) {
+                window.location.href = 'login.html';
+            } else {
+                alert('로그아웃 중 오류가 발생했습니다.');
+            }
+        });
+
+        function updateCountdown(targetDate, elementId) {
+            const now = new Date();
+            const timeDifference = targetDate - now;
+
+            const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+            document.getElementById(elementId).textContent = `${days}일 ${hours}시간 ${minutes}분 ${seconds}초 남음`;
+        }
+
+        const semesterStartDate = new Date('2024-09-02T00:00:00');
+        const semesterEndDate = new Date('2024-12-13T00:00:00');
+        let startInterval, endInterval;
+
+        document.getElementById('semesterStartButton').addEventListener('click', function() {
+            const button = this;
+            if (button.getAttribute('data-countdown') === 'true') {
+                clearInterval(startInterval);
+                button.textContent = button.getAttribute('data-default-text');
+                button.setAttribute('data-countdown', 'false');
+            } else {
+                startInterval = setInterval(() => updateCountdown(semesterStartDate, 'semesterStartButton'), 1000);
+                button.setAttribute('data-countdown', 'true');
+            }
+        });
+
+        document.getElementById('semesterEndButton').addEventListener('click', function() {
+            const button = this;
+            if (button.getAttribute('data-countdown') === 'true') {
+                clearInterval(endInterval);
+                button.textContent = button.getAttribute('data-default-text');
+                button.setAttribute('data-countdown', 'false');
+            } else {
+                endInterval = setInterval(() => updateCountdown(semesterEndDate, 'semesterEndButton'), 1000);
+                button.setAttribute('data-countdown', 'true');
+            }
+        });
+
+        checkLoginStatus();
+    </script>
+</body>
+</html>

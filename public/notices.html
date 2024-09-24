@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>공지사항</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <h1>공지사항</h1>
+    <div id="warning" style="display: none;">로그인 후 이용해주세요.</div>
+    <div id="noticeFormContainer" style="display: none;">
+        <form id="noticeForm">
+            <label for="title">제목:</label>
+            <input type="text" id="title" name="title" required>
+            <br>
+            <label for="content">내용:</label>
+            <input type="text" id="content" name="content" required>
+            <br>
+            <button type="submit">공지사항 등록</button>
+        </form>
+    </div>
+    <div id="noticesList"></div>
+    <script>
+        async function checkLoginStatus() {
+            const response = await fetch('/auth/status');
+            const data = await response.json();
+            if (!data.loggedIn) {
+                document.getElementById('warning').style.display = 'block';
+            } else {
+                document.getElementById('noticeFormContainer').style.display = 'block';
+            }
+        }
+
+        document.getElementById('noticeForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const response = await fetch('/notices', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: document.getElementById('title').value,
+                    content: document.getElementById('content').value
+                })
+            });
+            if (response.ok) {
+                alert('공지사항 등록 완료');
+                loadNotices();
+            } else {
+                alert('공지사항 등록 실패');
+            }
+        });
+
+        async function loadNotices() {
+            const response = await fetch('/notices');
+            const notices = await response.json();
+            const noticesList = document.getElementById('noticesList');
+            noticesList.innerHTML = '';
+            notices.forEach(notice => {
+                const noticeItem = document.createElement('div');
+                noticeItem.classList.add('notice-item');
+                noticeItem.innerHTML = `<h2>${notice.title}</h2><p>${notice.content}</p><a href="notice.html?id=${notice._id}">댓글 보기</a>`;
+                noticesList.appendChild(noticeItem);
+            });
+        }
+
+        checkLoginStatus();
+        loadNotices();
+    </script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>수강신청</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <h1>수강신청</h1>
+    <div id="warning" style="display: none;">로그인 후 이용해주세요.</div>
+    <div id="courses" style="display: none;">
+        <table>
+            <tr>
+                <th>과목명</th>
+                <th>교수님</th>
+                <th>신청현황</th>
+                <th>선택</th>
+            </tr>
+            <tr>
+                <td>인공지능</td>
+                <td>송태원</td>
+                <td id="ai-status">0/35</td>
+                <td><button onclick="enroll('ai')">선택</button></td>
+            </tr>
+            <tr>
+                <td>고급웹프로그래밍</td>
+                <td>전창완</td>
+                <td id="web-status">0/40</td>
+                <td><button onclick="enroll('web')">선택</button></td>
+            </tr>
+            <tr>
+                <td>IoT플랫폼</td>
+                <td>윤재석</td>
+                <td id="iot-status">0/35</td>
+                <td><button onclick="enroll('iot')">선택</button></td>
+            </tr>
+            <tr>
+                <td>마이크로프로세서</td>
+                <td>김동민</td>
+                <td id="micro-status">0/35</td>
+                <td><button onclick="enroll('micro')">선택</button></td>
+            </tr>
+        </table>
+    </div>
+    <script>
+        async function checkLoginStatus() {
+            const response = await fetch('/auth/status');
+            const data = await response.json();
+            if (!data.loggedIn) {
+                document.getElementById('warning').style.display = 'block';
+            } else {
+                document.getElementById('courses').style.display = 'block';
+                loadEnrollmentStatus();
+            }
+        }
+
+        async function enroll(course) {
+            const response = await fetch('/courses/enroll', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ course })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                alert('수강 신청 완료');
+                updateCourseStatus(course, data.enrolled, data.capacity);
+            } else {
+                const errorText = await response.text();
+                alert(errorText);
+            }
+        }
+
+        async function updateCourseStatus(course, enrolled, capacity) {
+            document.getElementById(`${course}-status`).textContent = `${enrolled}/${capacity}`;
+        }
+
+        async function loadEnrollmentStatus() {
+            const response = await fetch('/courses/status');
+            if (response.ok) {
+                const enrolledCourses = await response.json();
+                const courseList = {
+                    ai: '인공지능',
+                    web: '고급웹프로그래밍',
+                    iot: 'IoT플랫폼',
+                    micro: '마이크로프로세서'
+                };
+                enrolledCourses.forEach(course => {
+                    const courseId = Object.keys(courseList).find(key => courseList[key] === course.title);
+                    if (courseId) {
+                        document.getElementById(`${courseId}-status`).textContent = `${courseList[courseId].enrolled}/${courseList[courseId].capacity}`;
+                    }
+                });
+            }
+            updateAllCourseStatuses();
+        }
+
+        async function updateAllCourseStatuses() {
+            const response = await fetch('/courses/course-list');
+            const courseList = await response.json();
+            Object.keys(courseList).forEach(courseId => {
+                document.getElementById(`${courseId}-status`).textContent = `${courseList[courseId].enrolled}/${courseList[courseId].capacity}`;
+            });
+        }
+
+        checkLoginStatus();
+    </script>
+</body>
+</html>

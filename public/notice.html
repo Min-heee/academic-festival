@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>공지사항</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <h1>공지사항</h1>
+    <div id="noticeDetails"></div>
+    <div id="warning" style="display: none;">로그인 후 댓글을 작성할 수 있습니다.</div>
+    <form id="commentForm" style="display: none;">
+        <label for="content">댓글:</label>
+        <input type="text" id="content" name="content" required>
+        <br>
+        <button type="submit">댓글 작성</button>
+    </form>
+    <div id="commentsList"></div>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const noticeId = urlParams.get('id');
+
+        async function checkLoginStatus() {
+            const response = await fetch('/auth/status');
+            const data = await response.json();
+            if (!data.loggedIn) {
+                document.getElementById('warning').style.display = 'block';
+            } else {
+                document.getElementById('commentForm').style.display = 'block';
+            }
+        }
+
+        document.getElementById('commentForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const response = await fetch(`/notices/${noticeId}/comments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: document.getElementById('content').value
+                })
+            });
+            if (response.ok) {
+                alert('댓글 작성 완료');
+                loadComments();
+            } else {
+                alert('댓글 작성 실패');
+            }
+        });
+
+        async function loadNotice() {
+            const response = await fetch(`/notices/${noticeId}`);
+            const notice = await response.json();
+            const noticeDetails = document.getElementById('noticeDetails');
+            noticeDetails.innerHTML = `<h2>${notice.title}</h2><p>${notice.content}</p>`;
+        }
+
+        async function loadComments() {
+            const response = await fetch(`/notices/${noticeId}/comments`);
+            const comments = await response.json();
+            const commentsList = document.getElementById('commentsList');
+            commentsList.innerHTML = '';
+            comments.forEach(comment => {
+                const commentItem = document.createElement('div');
+                commentItem.innerHTML = `<p>${comment.content}</p>`;
+                commentsList.appendChild(commentItem);
+            });
+        }
+
+        checkLoginStatus();
+        loadNotice();
+        loadComments();
+    </script>
+</body>
+</html>
